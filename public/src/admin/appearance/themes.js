@@ -1,6 +1,5 @@
 'use strict';
 
-
 define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function (bootbox, translator, alerts) {
 	const Themes = {};
 
@@ -18,30 +17,7 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 				if (config['theme:id'] === themeId) {
 					return;
 				}
-				socket.emit('admin.themes.set', {
-					type: themeType,
-					id: themeId,
-					src: cssSrc,
-				}, function (err) {
-					if (err) {
-						return alerts.error(err);
-					}
-					config['theme:id'] = themeId;
-					highlightSelectedTheme(themeId);
-
-					alerts.alert({
-						alert_id: 'admin:theme',
-						type: 'info',
-						title: '[[admin/appearance/themes:theme-changed]]',
-						message: '[[admin/appearance/themes:restart-to-activate]]',
-						timeout: 5000,
-						clickfn: function () {
-							require(['admin/modules/instance'], function (instance) {
-								instance.rebuildAndRestart();
-							});
-						},
-					});
-				});
+				setTheme(themeType, themeId, cssSrc, alerts);
 			}
 		});
 
@@ -91,7 +67,43 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 			}
 		});
 	};
+	// helper functions generated with gpt
+	// made revisions such as defining theme, fixing tabs, changing varnames
+	function setTheme(themeType, themeId, cssSrc, alerts) {
+		// 1. Send the socket event
+		socket.emit('admin.themes.set', {
+			type: themeType,
+			id: themeId,
+			src: cssSrc,
+		}, function (err) {
+			if (err) {
+				return alerts.error(err);
+			}
+			// 2. Perform immediate post-set actions
+			config['theme:id'] = themeId;
+			highlightSelectedTheme(themeId);
+			// 3. Show alert & bind its click handler
+			showThemeChangedAlert();
+		});
+	}
 
+	function showThemeChangedAlert() {
+		alerts.alert({
+			alert_id: 'admin:theme',
+			type: 'info',
+			title: '[[admin/appearance/themes:theme-changed]]',
+			message: '[[admin/appearance/themes:restart-to-activate]]',
+			timeout: 5000,
+			clickfn: onThemeAlertClick,
+		});
+	}
+
+	function onThemeAlertClick() {
+		// Require asynchronously so we don’t block the main flow
+		require(['admin/modules/instance'], function (instance) {
+			instance.rebuildAndRestart();
+		});
+	}
 	function highlightSelectedTheme(themeId) {
 		translator.translate('[[admin/appearance/themes:select-theme]]  ||  [[admin/appearance/themes:current-theme]]', function (text) {
 			text = text.split('  ||  ');
