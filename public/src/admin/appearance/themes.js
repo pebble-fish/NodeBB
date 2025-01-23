@@ -69,7 +69,8 @@ define('admin/appearance/themes', ['bootbox', 'translator', 'alerts'], function 
 	};
 	// helper functions generated with gpt 
 	// made revisions such as defining theme, 
-	// fixing tabs, changing varnames
+	// fixing tabs, 
+	// changing varnames
 	function setTheme(themeType, themeId, cssSrc, alerts) {
 		// 1. Send the socket event
 		socket.emit('admin.themes.set', {
